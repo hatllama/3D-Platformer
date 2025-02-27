@@ -6,8 +6,8 @@ public class PlayerController : MonoBehaviour
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 7f;
     [SerializeField] private float rotationSpeed = 15f;
-    [SerializeField] private float jumpForce = 8f;
-    [SerializeField] private float gravityMultiplier = 2.5f;
+    [SerializeField] private float jumpForce = 20f;
+    [SerializeField] private float gravityMultiplier = 1.0f;
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
@@ -17,20 +17,16 @@ public class PlayerController : MonoBehaviour
     [Header("Double Jump Settings")]
     [SerializeField] private bool enableDoubleJump = true;
     [SerializeField] private float doubleJumpForce = 6f;
-    [SerializeField] private ParticleSystem doubleJumpEffect;
 
     [Header("Dash Settings")]
     [SerializeField] private bool enableDash = true;
     [SerializeField] private float dashForce = 20f;
     [SerializeField] private float dashDuration = 0.2f;
     [SerializeField] private float dashCooldown = 1.5f;
-    [SerializeField] private ParticleSystem dashEffect;
-    [SerializeField] private TrailRenderer dashTrail;
 
     // References
     private Rigidbody rb;
     private Transform cameraTransform;
-    private Animator animator;
     
     // State tracking
     private bool isGrounded;
@@ -47,19 +43,12 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        animator = GetComponentInChildren<Animator>();
         
         // Find the main camera
         Camera mainCamera = Camera.main;
         if (mainCamera != null)
         {
             cameraTransform = mainCamera.transform;
-        }
-        
-        // Disable trail renderer initially
-        if (dashTrail != null)
-        {
-            dashTrail.emitting = false;
         }
     }
 
@@ -88,9 +77,6 @@ public class PlayerController : MonoBehaviour
         {
             StartCoroutine(PerformDash());
         }
-        
-        // Update animations if animator is available
-        UpdateAnimations();
     }
 
     private void FixedUpdate()
@@ -154,18 +140,6 @@ public class PlayerController : MonoBehaviour
                 // Perform double jump
                 Jump(doubleJumpForce);
                 canDoubleJump = false;
-                
-                // Play double jump effect
-                if (doubleJumpEffect != null)
-                {
-                    doubleJumpEffect.Play();
-                }
-                
-                // Trigger double jump animation if available
-                if (animator != null)
-                {
-                    animator.SetTrigger("DoubleJump");
-                }
             }
         }
     }
@@ -179,12 +153,6 @@ public class PlayerController : MonoBehaviour
         
         // Apply jump force
         rb.AddForce(Vector3.up * force, ForceMode.Impulse);
-        
-        // Trigger jump animation if available
-        if (animator != null)
-        {
-            animator.SetTrigger("Jump");
-        }
     }
 
     private IEnumerator PerformDash()
@@ -218,36 +186,12 @@ public class PlayerController : MonoBehaviour
         // Apply dash force
         rb.linearVelocity = dashDirection * dashForce;
         
-        // Play dash effect
-        if (dashEffect != null)
-        {
-            dashEffect.Play();
-        }
-        
-        // Enable trail
-        if (dashTrail != null)
-        {
-            dashTrail.emitting = true;
-        }
-        
-        // Trigger dash animation if available
-        if (animator != null)
-        {
-            animator.SetTrigger("Dash");
-        }
-        
         // Wait for dash duration
         yield return new WaitForSeconds(dashDuration);
         
         // Reset state
         isDashing = false;
         rb.linearDamping = originalDrag;
-        
-        // Disable trail
-        if (dashTrail != null)
-        {
-            dashTrail.emitting = false;
-        }
         
         // Start cooldown
         yield return new WaitForSeconds(dashCooldown - dashDuration);
@@ -265,23 +209,6 @@ public class PlayerController : MonoBehaviour
         {
             canDoubleJump = false;
         }
-        
-        // Update animator parameter if available
-        if (animator != null)
-        {
-            animator.SetBool("Grounded", isGrounded);
-        }
-    }
-
-    private void UpdateAnimations()
-    {
-        if (animator == null)
-            return;
-            
-        // Set movement animation parameters
-        float movementMagnitude = new Vector2(horizontalInput, verticalInput).magnitude;
-        animator.SetFloat("Speed", movementMagnitude);
-        animator.SetBool("IsDashing", isDashing);
     }
 
     // Visualize the ground check radius in the editor
