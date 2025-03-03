@@ -49,8 +49,8 @@ public class GameManager : MonoBehaviour
         // Check if all coins collected
         if (score >= totalCoins)
         {
-            Debug.Log("All coins collected!");
-            // Trigger level completion logic here
+            scoreText.text = "All coins collected!";
+            
         }
     }
     
