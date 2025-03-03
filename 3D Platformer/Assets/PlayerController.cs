@@ -4,24 +4,24 @@ using System.Collections;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 7f;
-    [SerializeField] private float rotationSpeed = 15f;
-    [SerializeField] private float jumpForce = 20f;
-    [SerializeField] private float gravityMultiplier = 1.0f;
+    [SerializeField] private float moveSpeed = 10f;
+    [SerializeField] private float rotationSpeed = 25f;
+    [SerializeField] private float jumpForce = 15f;
+    [SerializeField] private float gravityMultiplier = 2.0f;
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
-    [SerializeField] private float groundCheckRadius = 0.2f;
+    [SerializeField] private float groundCheckRadius = 0.1f;
     [SerializeField] private LayerMask groundLayer;
 
     [Header("Double Jump Settings")]
     [SerializeField] private bool enableDoubleJump = true;
-    [SerializeField] private float doubleJumpForce = 6f;
+    [SerializeField] private float doubleJumpForce = 10f;
 
     [Header("Dash Settings")]
     [SerializeField] private bool enableDash = true;
-    [SerializeField] private float dashForce = 20f;
-    [SerializeField] private float dashDuration = 0.2f;
+    [SerializeField] private float dashForce = 25f;
+    [SerializeField] private float dashDuration = 0.1f;
     [SerializeField] private float dashCooldown = 1.5f;
 
     // References
@@ -43,6 +43,8 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.linearDamping = 5f;
         
         // Find the main camera
         Camera mainCamera = Camera.main;
@@ -113,7 +115,7 @@ public class PlayerController : MonoBehaviour
             targetVelocity.y = rb.linearVelocity.y; // Preserve vertical velocity
             
             // Apply movement using velocity change for better control
-            rb.linearVelocity = targetVelocity;
+            rb.AddForce(targetVelocity - rb.linearVelocity, ForceMode.VelocityChange);
             
             // Rotate player to face movement direction
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
